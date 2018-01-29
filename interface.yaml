@@ -1,0 +1,4 @@
+name: bgp
+summary: BGP interface
+version: 1
+repo: https://github.com/fnordahl/interface-bgp.git
