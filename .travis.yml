@@ -1,5 +1,7 @@
 dist: trusty
 language: python
+install:
+ - pip install pep8 flake8
 script:
  - pep8 .
  - flake8 .
