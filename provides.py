@@ -1,4 +1,4 @@
-# Copyright 2018 Frode Nordahl
+# Copyright 2018 Canonical Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -94,6 +94,7 @@ class BGPEndpoint(reactive.Endpoint):
                             bind_network['bind-addresses'][0]['addresses'])
             relation.to_publish['asn'] = myasn
             relation.to_publish['extra_bindings'] = extra_bindings
+            ch_core.hookenv.log("to_publish: '{}'".format(relation.to_publish))
 
     def get_received_info(self):
         neighbors = []

@@ -1,4 +1,4 @@
 name: bgp
 summary: BGP interface
 version: 1
-repo: https://github.com/fnordahl/interface-bgp.git
+repo: https://github.com/openstack-charmers/charm-interface-bgp.git
