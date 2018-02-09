@@ -57,7 +57,7 @@ class BGPEndpoint(reactive.Endpoint):
 
         return asn
 
-    def publish_info(self, asn=None):
+    def publish_info(self, asn=None, passive=False):
         """
         Publish the AS Number and IP address of any extra-bindings of this
         BGP Endpoint over the relationship.
@@ -94,6 +94,7 @@ class BGPEndpoint(reactive.Endpoint):
                             bind_network['bind-addresses'][0]['addresses'])
             relation.to_publish['asn'] = myasn
             relation.to_publish['extra_bindings'] = extra_bindings
+            relation.to_publish['passive'] = passive
             ch_core.hookenv.log("to_publish: '{}'".format(relation.to_publish))
 
     def get_received_info(self):
@@ -123,5 +124,6 @@ class BGPEndpoint(reactive.Endpoint):
                     'links': links,
                     'relation_id': relation.relation_id,
                     'remote_unit_name': unit.unit_name,
+                    'passive': unit.received['passive'],
                     })
         return neighbors
