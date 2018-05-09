@@ -2,3 +2,8 @@ name: bgp
 summary: BGP interface
 version: 1
 repo: https://github.com/openstack-charmers/charm-interface-bgp.git
+ignore:
+  - 'unit_tests'
+  - '.stestr.conf'
+  - 'test-requirements.txt'
+  - 'tox.ini'

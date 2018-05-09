@@ -45,15 +45,12 @@ class BGPEndpoint(reactive.Endpoint):
           4 200 000 000 - 4 211 081 214
         """
         asn_base = 4211081215
-        mask = netaddr.IPAddress('5.255.255.255')
+        mask = netaddr.IPAddress('4.255.255.255')
         unit_ip = netaddr.IPAddress(
                 ch_core.hookenv.unit_get('private-address'))
         masked_ip = unit_ip & mask
 
         asn = asn_base + int(masked_ip)
-
-        # XXX: This assert should be removed from code and put in a unit test
-        assert asn <= 4294967294
 
         return asn
 
