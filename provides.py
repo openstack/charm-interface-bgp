@@ -83,6 +83,8 @@ class BGPEndpoint(reactive.Endpoint):
                          for a in
                          rel_network['bind-addresses'][0]['addresses']]
             actual_bindings = []
+            if bindings is None:
+                continue
             for binding in bindings:
                 bind_network = ch_core.hookenv.network_get(
                         binding,
