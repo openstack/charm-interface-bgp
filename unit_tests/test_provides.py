@@ -33,6 +33,40 @@ class TestBGPProvides(ut_utils.BaseTestCase):
         asn = endpoint.generate_asn()
         self.assertEqual(asn, 4294967294)
 
+    def test_generate_asn_16_min(self):
+        self.patch_object(provides, 'ch_core')
+        self.ch_core.hookenv.unit_get.return_value = '0.0.0.0'
+        endpoint = provides.BGPEndpoint('bgpserver')
+        asn = endpoint.generate_asn_16()
+        self.assertEqual(asn, 65023)
+
+    def test_generate_asn_16_collission(self):
+        self.patch_object(provides, 'ch_core')
+        self.ch_core.hookenv.unit_get.return_value = '0.0.0.0'
+        endpoint = provides.BGPEndpoint('bgpserver')
+        self.ch_core.hookenv.unit_get.return_value = '10.0.0.0'
+        asn0 = endpoint.generate_asn_16()
+        self.ch_core.hookenv.unit_get.return_value = '10.0.0.255'
+        asn0_255 = endpoint.generate_asn_16()
+        self.ch_core.hookenv.unit_get.return_value = '10.0.1.0'
+        asn1 = endpoint.generate_asn_16()
+        self.ch_core.hookenv.unit_get.return_value = '10.0.1.255'
+        asn1_255 = endpoint.generate_asn_16()
+        self.ch_core.hookenv.unit_get.return_value = '10.0.2.0'
+        asn2 = endpoint.generate_asn_16()
+        self.assertNotEqual(asn0, asn0_255)
+        self.assertNotEqual(asn0, asn1)
+        self.assertNotEqual(asn0_255, asn1_255)
+        self.assertNotEqual(asn1, asn1_255)
+        self.assertEqual(asn0, asn2)
+
+    def test_generate_asn_16_max(self):
+        self.patch_object(provides, 'ch_core')
+        self.ch_core.hookenv.unit_get.return_value = '255.255.255.255'
+        endpoint = provides.BGPEndpoint('bgpserver')
+        asn = endpoint.generate_asn_16()
+        self.assertEqual(asn, 65534)
+
     _network_get_side_effect = [
         yaml.load('''
 bind-addresses:
@@ -124,6 +158,50 @@ ingress-addresses:
             endpoint.relations[0].to_publish,
             {
                 'asn': 4279270138,
+                'bindings': [
+                    {
+                        'address': '172.16.100.1',
+                        'cidr': '172.16.100.0/30'
+                    },
+                    {
+                        'address': '2001:db8:100::1:0:0',
+                        'cidr': '2001:db8:100::/64'
+                    },
+                    {
+                        'address': '172.16.110.1',
+                        'cidr': '172.16.110.0/30'
+                    },
+                    {
+                        'address': '2001:db8:110::1:0:0',
+                        'cidr': '2001:db8:110::/64'
+                    },
+                    {
+                        'address': '172.16.120.1',
+                        'cidr': '172.16.120.0/30'
+                    },
+                    {
+                        'address': '2001:db8:120::1:0:0',
+                        'cidr': '2001:db8:120::/64'
+                    },
+                ],
+                'passive': False,
+            }
+        )
+
+    def test_publish_info_16bit_asn(self):
+        self.maxDiff = None
+        self.patch_object(provides, 'ch_core')
+        self.ch_core.hookenv.unit_get.return_value = '172.16.122.251'
+        self.ch_core.hookenv.network_get.side_effect = \
+            self._network_get_side_effect
+        endpoint = provides.BGPEndpoint('bgpserver')
+        endpoint._relations = [self._relation]
+        endpoint.publish_info(bindings=['ptp0', 'ptp1', 'ptp2', 'ptp3',
+                                        'lan0'], use_16bit_asn=True)
+        self.assertEqual(
+            endpoint.relations[0].to_publish,
+            {
+                'asn': 65274,
                 'bindings': [
                     {
                         'address': '172.16.100.1',

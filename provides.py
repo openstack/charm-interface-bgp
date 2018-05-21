@@ -54,7 +54,40 @@ class BGPEndpoint(reactive.Endpoint):
 
         return asn
 
-    def publish_info(self, asn=None, passive=False, bindings=None):
+    def generate_asn_16(self):
+        """
+        Generate unique 16-bit Private Use [RFC6996] ASn.
+
+        This is useful to automate configuration of BGP routers that is part
+        of a Clos Network Topology with a Layer 3-Only routed design. [RFC7938]
+
+        Assumption:
+        - Unit has a IPv4 address and it is unique to the deployment.
+
+        Implementation:
+        - A private 16-bit ASn has a range of 64512 - 65534
+          which leaves us with 1022 possible endpoints.
+        - The 16-bit ASn space is limited and this implementation
+          will give you unique ASns for a /23
+
+        Note:
+        - This implementation generates ASn in the following range:
+          65023 - 65534
+        - Leaving the following range for any static configuration needs:
+          64512 - 65022
+        """
+        asn_base = 65023
+        mask = netaddr.IPAddress('0.0.1.255')
+        unit_ip = netaddr.IPAddress(
+                ch_core.hookenv.unit_get('private-address'))
+        masked_ip = unit_ip & mask
+
+        asn = asn_base + int(masked_ip)
+
+        return asn
+
+    def publish_info(self, asn=None, passive=False, bindings=None,
+                     use_16bit_asn=False):
         """
         Publish the AS Number and IP address of any extra-bindings of this
         BGP Endpoint over the relationship.
@@ -70,7 +103,10 @@ class BGPEndpoint(reactive.Endpoint):
         if asn:
             myasn = asn
         else:
-            myasn = self.generate_asn()
+            if use_16bit_asn:
+                myasn = self.generate_asn_16()
+            else:
+                myasn = self.generate_asn()
 
         # network_get will return addresses for bindings regardless of them
         # being bound to a network space.  detect actual space bindings by
