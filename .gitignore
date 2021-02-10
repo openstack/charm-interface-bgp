@@ -2,3 +2,5 @@
 .stestr
 *__pycache__*
 *.pyc
+.coverage
+cover/
